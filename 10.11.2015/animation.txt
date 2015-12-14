@@ -1,0 +1,43 @@
+<html>
+<head>
+<title>Javascript animation</title>
+<style type="text/css">
+body {
+  background:#99ccff;
+}
+</style>
+<script type="text/javascript">
+
+var imgObj = null; // object
+
+function doMove() {
+  imgObj.style.left = parseInt(imgObj.style.left)+5+'px';
+  //setTimeout(doMove,20); // call doMove in 20msec
+}
+
+function init() {
+  imgObj = document.getElementById('img'); // get the "foo" object
+  imgObj.style.left = '0px'; // set its initial position to 0px
+  imgObj.style.position= 'absolute';
+  //imgObj.style.top = '0px';
+  imgObj.style.visibility='visible'; //hidden
+
+  //doMove(); // start animating
+  setInterval(doMove,20);
+}
+
+
+window.onload = init;
+
+</script>
+</head>
+
+<body>
+
+<h1>Javascript animation</h1>
+<h2 id="header">Recursive setTimeout-based animation</h2>
+
+<img id="img" src="pic_mountain.jpg" alt="Mountain View" style="width:304px;height:228px;">
+
+</body>
+</html>

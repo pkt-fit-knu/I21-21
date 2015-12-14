@@ -1,0 +1,15 @@
+.pinkButton {
+    background: #990000;
+    border: none;
+    color: #FFFFFF;
+    cursor: pointer;
+    border-radius: 0.5em;
+    margin-bottom: 0.5em;
+    margin-top: 0.5em;
+    padding: 0.5em;
+}
+
+.pinkButton:hover {
+    background: #DD0000;
+    color: #000000;
+}
