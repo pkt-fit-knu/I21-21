@@ -33,10 +33,14 @@ function RollerCoaster(nodes, ball) {
     for (var i = 0; i < nodes.length - 1; ++i) {
         this.segments.push([nodes[i], nodes[i + 1]]);
     }
+    this.ballX = 10;
+    this.ballY = 150;
+    this.img = ball;
     this.hV = 0;
     this.vV = 0;
     this.hA = 0;
     this.vA = 0;
+    this.freeFall = false;
 }
 
 RollerCoaster.generateRollerCoaster = function (step, ball) {
@@ -46,6 +50,9 @@ RollerCoaster.generateRollerCoaster = function (step, ball) {
     var Y = h / 3;
     var X = 0;
     var nodes = [];
+    nodes.push({"x": X, "y": Y});
+    Y += 100;
+    X += 100;
     
     while (X < w) {
         nodes.push({"x": X, "y": Y});
@@ -56,7 +63,7 @@ RollerCoaster.generateRollerCoaster = function (step, ball) {
     return new RollerCoaster(nodes, ball);
 };
 
-RollerCoaster.g = 1;
+RollerCoaster.g = 0.1;
 
 RollerCoaster.prototype.draw = function () {
     var context = canvas.getContext("2d");
@@ -69,19 +76,93 @@ RollerCoaster.prototype.draw = function () {
     context.stroke();
 };
 
-RollerCoaster.prototype.getMaxY = function (x) {
-    var segmentIndex = -1;
+RollerCoaster.prototype.identifySegment = function () {
+    this.segmentIndex = -1;
     for (var i = 0; i < this.segments.length; ++i) {
-        if (this.segments[i][0].x <= x && x < this.segments[i][1].x) {
-            segmentIndex = i;
-            break;
+        if (this.segments[i][0].x <= this.ballX && this.ballX < this.segments[i][1].x) {
+            this.segmentIndex = i;
+            return;
         }
     }
-    var p1 = this.segments[segmentIndex][0];
-    var p2 = this.segments[segmentIndex][1];
+}
+
+RollerCoaster.prototype.getMaxY = function (x) {
+    var p1 = this.segments[this.segmentIndex][0];
+    var p2 = this.segments[this.segmentIndex][1];
     
     return (x - p1.x) * (p2.y - p1.y) / (p2.x - p1.x) + p1.y;
 };
+
+RollerCoaster.prototype.getAngle = function () {
+    var p1 = this.segments[this.segmentIndex][0];
+    var p2 = this.segments[this.segmentIndex][1];
+    var tg = (p2.y - p1.y) / (p2.x - p1.x);
+    
+    return Math.atan(tg);
+}
+
+function moveBall() {
+    var freeFallChanged = false;
+    rollerCoaster.identifySegment();
+    var y = rollerCoaster.ballY;
+    var maxY = rollerCoaster.getMaxY(rollerCoaster.ballX);
+    if (rollerCoaster.ballY < maxY) {
+        if (!rollerCoaster.freeFall)
+            freeFallChanged = true;
+        rollerCoaster.freeFall = true;
+        rollerCoaster.vA += RollerCoaster.g;
+    } else {
+        var angle = rollerCoaster.getAngle();
+        rollerCoaster.vA = RollerCoaster.g * Math.cos(angle);
+        rollerCoaster.hA = RollerCoaster.g * Math.sin(angle);
+        if (rollerCoaster.freeFall) {
+            var a = Math.sqrt(Math.pow(rollerCoaster.hA, 2) + Math.pow(rollerCoaster.vA, 2));
+            var sign = Math.sign(rollerCoaster.hV);
+            if (sign == 0) {
+                sign = 1;
+            }
+            if (sign == -1) {
+                sign = -0.5;
+            }
+            rollerCoaster.hA = a * Math.cos(angle) * sign;
+            rollerCoaster.vA = a * Math.sin(angle) * sign;//v * Math.sin(angle) * sign;
+        }
+        if (rollerCoaster.freeFall)
+            freeFallChanged = true;
+        rollerCoaster.freeFall = false;
+    }
+    
+    rollerCoaster.hV += rollerCoaster.hA;
+    rollerCoaster.vV += rollerCoaster.vA;
+    
+    rollerCoaster.ballX += rollerCoaster.hV;
+    rollerCoaster.ballY += rollerCoaster.vV;
+    
+    if (rollerCoaster.ballY > maxY) {
+        rollerCoaster.ballY = maxY;
+    }
+    
+    if (rollerCoaster.ballX > window.innerWidth - 40) {
+        rollerCoaster.ballX = window.innerWidth - 40;
+        rollerCoaster.hV = -rollerCoaster.hV * 0.75;
+        rollerCoaster.hA = -rollerCoaster.hA * 0.75;
+    }
+    
+    if (rollerCoaster.ballX < 0) {
+        rollerCoaster.ballX = 0;
+        rollerCoaster.hV = -rollerCoaster.hV * 0.75;
+        rollerCoaster.hA = -rollerCoaster.hA * 0.75;
+    }
+    
+    if (rollerCoaster.ballY < y && rollerCoaster.vV > 0) {
+        rollerCoaster.vV = 0;
+        if (freeFallChanged)
+            rollerCoaster.vA = RollerCoaster.g * Math.sin(angle);
+    }
+    
+    rollerCoaster.img.style.left = rollerCoaster.ballX;
+    rollerCoaster.img.style.top = rollerCoaster.ballY - 10;
+}
 
 window.onload = function () {
     createCanvas();
@@ -89,4 +170,5 @@ window.onload = function () {
     var ball = document.getElementById("ball");
     rollerCoaster = RollerCoaster.generateRollerCoaster(10, ball);
     rollerCoaster.draw();
+    setInterval(moveBall, 50);
 };
