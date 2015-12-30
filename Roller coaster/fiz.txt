@@ -1,0 +1,5 @@
+ha = g * sin(angle)
+vx += ha;
+
+va = g * cos(angle)
+hy = g * cos(angle)

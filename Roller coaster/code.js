@@ -160,6 +160,10 @@ function moveBall() {
             rollerCoaster.vA = RollerCoaster.g * Math.sin(angle);
     }
     
+    if (rollerCoaster.ballY > y && rollerCoaster.hV < 0) {
+        rollerCoaster.hV *= 0.97;
+    }
+    
     rollerCoaster.img.style.left = rollerCoaster.ballX;
     rollerCoaster.img.style.top = rollerCoaster.ballY - 10;
 }
