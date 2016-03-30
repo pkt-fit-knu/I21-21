@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">UniversalTable</string>
+
+    <string name="add_row">Add row</string>
+    <string name="clear">Clear</string>
+    <string name="search">Search</string>
+    <string name="type_here">Type here</string>
+</resources>
